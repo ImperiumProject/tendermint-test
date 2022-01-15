@@ -44,7 +44,7 @@ func DifferentDecisions(sysParams *common.SystemParams) *testlib.TestCase {
 		"PrecommittedNew",
 	).On(
 		diffCommits(),
-		testlib.SuccessStateLabel,
+		testlib.FailStateLabel,
 	)
 
 	cascade := testlib.NewHandlerCascade()
