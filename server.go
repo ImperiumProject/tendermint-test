@@ -9,7 +9,7 @@ import (
 	"github.com/ImperiumProject/imperium/config"
 	"github.com/ImperiumProject/imperium/testlib"
 	"github.com/ImperiumProject/tendermint-test/common"
-	"github.com/ImperiumProject/tendermint-test/testcases/rskip"
+	"github.com/ImperiumProject/tendermint-test/testcases/lockedvalue"
 	"github.com/ImperiumProject/tendermint-test/util"
 )
 
@@ -22,19 +22,19 @@ func main() {
 
 	server, err := testlib.NewTestingServer(
 		&config.Config{
-			APIServerAddr: "192.168.1.8:7074",
+			APIServerAddr: "10.0.0.8:7074",
 			NumReplicas:   sysParams.N,
 			LogConfig: config.LogConfig{
-				Format: "debug",
+				Format: "json",
 				Path:   "/tmp/tendermint/log/checker.log",
 			},
 		},
 		&util.TMessageParser{},
 		[]*testlib.TestCase{
 			// testcases.DummyTestCase(),
-			rskip.RoundSkip(sysParams, 1, 2),
+			// rskip.RoundSkip(sysParams, 1, 3),
 			// rskip.BlockVotes(sysParams),
-			// lockedvalue.One(),
+			lockedvalue.DifferentDecisions(sysParams),
 			// lockedvalue.Two(),
 			// lockedvalue.Three(),
 			// sanity.OneTestCase(),

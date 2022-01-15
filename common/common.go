@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/ImperiumProject/imperium/log"
 	"github.com/ImperiumProject/imperium/testlib"
 	"github.com/ImperiumProject/tendermint-test/util"
 )
@@ -18,8 +19,10 @@ func Setup(sysParams *SystemParams, options ...SetupOption) func(*testlib.Contex
 	return func(c *testlib.Context) error {
 		c.Vars.Set("n", sysParams.N)
 		c.Vars.Set("faults", sysParams.F)
-		opts := append(DefaultOptions, options...)
-		for _, o := range opts {
+		if len(options) == 0 {
+			options = append(options, DefaultOptions...)
+		}
+		for _, o := range options {
 			o(c)
 		}
 		return nil
@@ -34,6 +37,9 @@ func partition(c *testlib.Context) {
 		[]string{"h", "faulty", "rest"},
 	)
 	c.Vars.Set("partition", partition)
+	c.Logger().With(log.LogParams{
+		"partition": partition.String(),
+	}).Info("Partitioned replicas")
 }
 
 func GetCurRound(ctx *testlib.Context) (int, bool) {

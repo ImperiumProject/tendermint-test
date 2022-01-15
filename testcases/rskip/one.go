@@ -12,8 +12,7 @@ func RoundSkip(sysParams *common.SystemParams, height, round int) *testlib.TestC
 	sm := testlib.NewStateMachine()
 	sm.Builder().
 		On(common.HeightReached(height), "SkipRounds").
-		On(common.RoundReached(round), "DeliverDelayed").
-		On(testlib.Set("DelayedPrevotes").Count().Eq(0), testlib.SuccessStateLabel)
+		On(common.RoundReached(round), testlib.SuccessStateLabel)
 
 	cascade := testlib.NewHandlerCascade()
 	cascade.AddHandler(common.TrackRound)
@@ -42,13 +41,6 @@ func RoundSkip(sysParams *common.SystemParams, height, round int) *testlib.TestC
 		).Then(
 			testlib.Set("DelayedPrevotes").Store(),
 			testlib.DropMessage(),
-		),
-	)
-	cascade.AddHandler(
-		testlib.If(
-			sm.InState("DeliverDelayed"),
-		).Then(
-			testlib.Set("DelayedPrevotes").DeliverAll(),
 		),
 	)
 

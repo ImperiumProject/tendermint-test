@@ -11,13 +11,14 @@ import (
 func IsCommit() testlib.Condition {
 	return func(e *types.Event, c *testlib.Context) bool {
 		eType, ok := e.Type.(*types.GenericEventType)
-		if eType.T == "Committing block" {
+		if ok && eType.T == "Committing block" {
 			blockID, ok := eType.Params["block_id"]
 			if ok {
 				c.Vars.Set(commitBlockIDKey, blockID)
 			}
+			return true
 		}
-		return ok && eType.T == "Committing block"
+		return false
 	}
 }
 
@@ -28,6 +29,16 @@ func IsMessageFromRound(round int) testlib.Condition {
 			return false
 		}
 		return m.Round() == round
+	}
+}
+
+func IsConsensusMessage() testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		m, ok := util.GetMessageFromEvent(e, c)
+		if !ok {
+			return false
+		}
+		return m.Round() != -1
 	}
 }
 

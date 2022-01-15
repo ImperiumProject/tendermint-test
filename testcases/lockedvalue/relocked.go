@@ -9,8 +9,6 @@ import (
 	"github.com/ImperiumProject/tendermint-test/util"
 )
 
-func getVoteReplica()
-
 // Change vote to nil if we haven't seen new proposal, to the new proposal otherwise
 func changeVote() testlib.Action {
 	return func(e *types.Event, c *testlib.Context) []*types.Message {
@@ -27,7 +25,7 @@ func Relocked(sysParams *common.SystemParams) *testlib.TestCase {
 	sm := testlib.NewStateMachine()
 	init := sm.Builder()
 	init.On(common.IsCommit(), testlib.FailStateLabel)
-	// We observe a precommit for round 0 proposal from h
+	// We observe a precommit for round 0 proposal from replica "h"
 	valueLocked := init.On(
 		testlib.IsMessageSend().
 			And(common.IsVoteFromPart("h")).
@@ -35,6 +33,7 @@ func Relocked(sysParams *common.SystemParams) *testlib.TestCase {
 			And(common.IsVoteForProposal("zeroProposal")),
 		"ValueLocked",
 	)
+	// Wait until all move to round 1
 	roundOne := valueLocked.On(common.RoundReached(1), "RoundOne")
 	// We observe a precommit for the new proposal from h
 	roundOne.On(
@@ -52,6 +51,7 @@ func Relocked(sysParams *common.SystemParams) *testlib.TestCase {
 	cascade.AddHandler(
 		testlib.If(
 			testlib.IsMessageSend().
+				// And(common.IsMessageType())
 				And(common.IsVoteFromFaulty()),
 		).Then(changeVote()),
 	)
