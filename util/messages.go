@@ -10,6 +10,7 @@ import (
 	"github.com/ImperiumProject/imperium/testlib"
 	"github.com/ImperiumProject/imperium/types"
 	"github.com/gogo/protobuf/proto"
+	tcons "github.com/tendermint/tendermint/consensus"
 	tmsg "github.com/tendermint/tendermint/proto/tendermint/consensus"
 	prototypes "github.com/tendermint/tendermint/proto/tendermint/types"
 	ttypes "github.com/tendermint/tendermint/types"
@@ -59,8 +60,15 @@ func (t *TMessage) Clone() types.ParsedMessage {
 }
 
 func (t *TMessage) String() string {
-	d, _ := json.Marshal(t)
-	return string(d)
+	tcMsg, err := tcons.MsgFromProto(t.Data)
+	if err == nil {
+		tS, ok := tcMsg.(fmt.Stringer)
+		if ok {
+			return tS.String()
+		}
+		return ""
+	}
+	return ""
 }
 
 func (t *TMessage) Height() int {
