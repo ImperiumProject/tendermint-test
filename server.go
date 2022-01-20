@@ -32,8 +32,8 @@ func main() {
 		&util.TMessageParser{},
 		[]*testlib.TestCase{
 			// testcases.DummyTestCase(),
-			rskip.RoundSkip(sysParams, 1, 3),
-			// rskip.BlockVotes(sysParams),
+			// rskip.RoundSkip(sysParams, 1, 3),
+			rskip.BlockVotes(sysParams),
 			// lockedvalue.DifferentDecisions(sysParams),
 			// lockedvalue.Two(),
 			// lockedvalue.Three(),

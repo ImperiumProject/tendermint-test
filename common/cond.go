@@ -175,6 +175,28 @@ func IsVoteForProposal(proposalLabel string) testlib.Condition {
 	}
 }
 
+func IsNilVote() testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		tMsg, ok := util.GetMessageFromEvent(e, c)
+		if !ok {
+			return false
+		}
+		blockID, ok := util.GetVoteBlockIDS(tMsg)
+		return ok && blockID == ""
+	}
+}
+
+func IsNotNilVote() testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		tMsg, ok := util.GetMessageFromEvent(e, c)
+		if !ok {
+			return false
+		}
+		blockID, ok := util.GetVoteBlockIDS(tMsg)
+		return ok && blockID == ""
+	}
+}
+
 func IsProposalEq(proposalLabel string) testlib.Condition {
 	return func(e *types.Event, c *testlib.Context) bool {
 		proposal, ok := c.Vars.GetString(proposalLabel)

@@ -1,8 +1,11 @@
 package common
 
 import (
+	"math/rand"
+
 	"github.com/ImperiumProject/imperium/log"
 	"github.com/ImperiumProject/imperium/testlib"
+	"github.com/ImperiumProject/imperium/types"
 	"github.com/ImperiumProject/tendermint-test/util"
 )
 
@@ -11,6 +14,7 @@ var (
 
 	curRoundKey      = "_curRound"
 	commitBlockIDKey = "commitBlockId"
+	randomReplicaKey = "_randomReplica"
 )
 
 type SetupOption func(*testlib.Context)
@@ -27,6 +31,25 @@ func Setup(sysParams *SystemParams, options ...SetupOption) func(*testlib.Contex
 		}
 		return nil
 	}
+}
+
+func PickRandomReplica() SetupOption {
+	return func(c *testlib.Context) {
+		rI := rand.Intn(c.Replicas.Cap())
+		var replica types.ReplicaID
+		for i, r := range c.Replicas.Iter() {
+			replica = r.ID
+			if i == rI {
+				break
+			}
+		}
+		c.Vars.Set(randomReplicaKey, replica)
+	}
+}
+
+func GetRandomReplica(_ *types.Event, c *testlib.Context) (types.ReplicaID, bool) {
+	rS, ok := c.Vars.GetString(randomReplicaKey)
+	return types.ReplicaID(rS), ok
 }
 
 func partition(c *testlib.Context) {
