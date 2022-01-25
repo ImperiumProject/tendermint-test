@@ -13,7 +13,7 @@ var (
 	DefaultOptions = []SetupOption{partition}
 
 	curRoundKey      = "_curRound"
-	commitBlockIDKey = "commitBlockId"
+	commitBlockIDKey = "_commitBlockId"
 	randomReplicaKey = "_randomReplica"
 )
 
@@ -43,7 +43,10 @@ func PickRandomReplica() SetupOption {
 				break
 			}
 		}
-		c.Vars.Set(randomReplicaKey, replica)
+		c.Vars.Set(randomReplicaKey, string(replica))
+		c.Logger().With(log.LogParams{
+			"randomReplica": replica,
+		}).Info("Picked random replica")
 	}
 }
 

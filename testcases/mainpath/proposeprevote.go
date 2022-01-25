@@ -8,41 +8,31 @@ import (
 	"github.com/ImperiumProject/tendermint-test/util"
 )
 
-func ProposalNilPrevote(sp *common.SystemParams) *testlib.TestCase {
+func ProposePrevote(sp *common.SystemParams) *testlib.TestCase {
 	sm := testlib.NewStateMachine()
-	init := sm.Builder()
 
+	init := sm.Builder()
 	init.On(
 		testlib.IsMessageSend().
-			And(common.IsMessageFromRound(0)).
 			And(common.IsVoteFromPart("h")).
-			And(common.IsNotNilVote()),
-		testlib.FailStateLabel,
-	)
-	init.On(
-		testlib.IsMessageSend().
-			And(common.IsMessageFromRound(0)).
-			And(common.IsVoteFromPart("h")).
-			And(common.IsNilVote()),
+			And(common.IsVoteForProposal("zeroProposal")),
 		testlib.SuccessStateLabel,
 	)
 
 	cascade := testlib.NewHandlerCascade()
-
 	cascade.AddHandler(
 		testlib.If(
 			testlib.IsMessageSend().
 				And(common.IsMessageFromRound(0)).
-				And(common.IsMessageToPart("h")).
 				And(common.IsMessageType(util.Proposal)),
 		).Then(
-			testlib.DropMessage(),
+			common.RecordProposal("zeroProposal"),
+			testlib.DeliverMessage(),
 		),
 	)
-
 	testcase := testlib.NewTestCase(
-		"ProposalNilPrevote",
-		30*time.Second,
+		"ProposePrevote",
+		15*time.Second,
 		sm,
 		cascade,
 	)

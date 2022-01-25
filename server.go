@@ -9,7 +9,6 @@ import (
 	"github.com/ImperiumProject/imperium/config"
 	"github.com/ImperiumProject/imperium/testlib"
 	"github.com/ImperiumProject/tendermint-test/common"
-	"github.com/ImperiumProject/tendermint-test/testcases/rskip"
 	"github.com/ImperiumProject/tendermint-test/util"
 )
 
@@ -32,16 +31,21 @@ func main() {
 		&util.TMessageParser{},
 		[]*testlib.TestCase{
 			// testcases.DummyTestCase(),
-			// rskip.RoundSkip(sysParams, 1, 3),
-			rskip.BlockVotes(sysParams),
+			// rskip.RoundSkip(sysParams, 1, 2),
+			// rskip.BlockVotes(sysParams),
+			// rskip.ExpectNewRound(sysParams),
+			// rskip.CommitAfterRoundSkip(sysParams),
 			// lockedvalue.DifferentDecisions(sysParams),
-			// lockedvalue.Two(),
-			// lockedvalue.Three(),
-			// sanity.OneTestCase(),
-			// sanity.TwoTestCase(),
-			// sanity.ThreeTestCase(),
-			//sanity.HigherProp(),
-			// bfttime.OneTestCase(),
+			// lockedvalue.ExpectUnlock(sysParams),
+			// lockedvalue.ExpectNoUnlock(sysParams),
+			// lockedvalue.Relocked(sysParams),
+			// lockedvalue.LockedCommit(sysParams),
+			// mainpath.NilPrevotes(sysParams),
+			// mainpath.ProposalNilPrevote(sysParams),
+			// mainpath.ProposePrevote(sysParams),
+			// mainpath.QuorumPrevotes(sysParams),
+			// invariant.QuorumPrecommits(sysParams),
+			// invariant.NotNilDecide(sysParams),
 		},
 	)
 

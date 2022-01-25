@@ -10,9 +10,15 @@ import (
 
 func RoundSkip(sysParams *common.SystemParams, height, round int) *testlib.TestCase {
 	sm := testlib.NewStateMachine()
-	sm.Builder().
+	roundReached := sm.Builder().
 		On(common.HeightReached(height), "SkipRounds").
-		On(common.RoundReached(round), testlib.SuccessStateLabel)
+		On(common.RoundReached(round), "roundReached")
+
+	roundReached.MarkSuccess()
+	roundReached.On(
+		common.DiffCommits(),
+		testlib.FailStateLabel,
+	)
 
 	cascade := testlib.NewHandlerCascade()
 	cascade.AddHandler(common.TrackRound)
@@ -30,6 +36,13 @@ func RoundSkip(sysParams *common.SystemParams, height, round int) *testlib.TestC
 				And(common.IsVoteFromFaulty()),
 		).Then(
 			common.ChangeVoteToNil(),
+		),
+	)
+	cascade.AddHandler(
+		testlib.If(
+			sm.InState("roundReached"),
+		).Then(
+			testlib.Set("DelayedPrevotes").DeliverAll(),
 		),
 	)
 	cascade.AddHandler(

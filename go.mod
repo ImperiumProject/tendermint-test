@@ -2,6 +2,10 @@ module github.com/ImperiumProject/tendermint-test
 
 go 1.17
 
+replace (
+ 	github.com/ImperiumProject/imperium v0.1.3 => /Users/srinidhin/Local/go/src/github.com/ImperiumProject/imperium
+)
+
 require (
 	github.com/ImperiumProject/imperium v0.1.3
 	github.com/gogo/protobuf v1.3.2

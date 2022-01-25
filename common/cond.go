@@ -22,6 +22,32 @@ func IsCommit() testlib.Condition {
 	}
 }
 
+func IsNilCommit() testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		eType, ok := e.Type.(*types.GenericEventType)
+		if ok && eType.T == "Committing block" {
+			blockID, ok := eType.Params["block_id"]
+			return ok && blockID == ""
+		}
+		return false
+	}
+}
+
+func IsCommitForProposal(prop string) testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		proposal, ok := c.Vars.GetString(prop)
+		if !ok {
+			return false
+		}
+		eType, ok := e.Type.(*types.GenericEventType)
+		if ok && eType.T == "Committing block" {
+			blockID, ok := eType.Params["block_id"]
+			return ok && blockID == proposal
+		}
+		return false
+	}
+}
+
 func IsMessageFromRound(round int) testlib.Condition {
 	return func(e *types.Event, c *testlib.Context) bool {
 		m, ok := util.GetMessageFromEvent(e, c)
@@ -131,6 +157,49 @@ func IsMessageType(t util.MessageType) testlib.Condition {
 	}
 }
 
+func IsNewHeightRoundFromPart(p string, h, r int) testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		partition, ok := getPartition(c)
+		if !ok {
+			return false
+		}
+		part, ok := partition.GetPart(p)
+		if !ok {
+			return false
+		}
+		return part.Contains(e.Replica) && IsNewHeightRound(h, r)(e, c)
+	}
+}
+
+func IsNewHeightRound(h int, r int) testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		eType, ok := e.Type.(*types.GenericEventType)
+		if !ok {
+			return false
+		}
+		if eType.T != "newStep" {
+			return false
+		}
+		roundS, ok := eType.Params["round"]
+		if !ok {
+			return false
+		}
+		round, err := strconv.Atoi(roundS)
+		if err != nil {
+			return false
+		}
+		heightS, ok := eType.Params["height"]
+		if !ok {
+			return false
+		}
+		height, err := strconv.Atoi(heightS)
+		if err != nil {
+			return false
+		}
+		return height == h && round == r
+	}
+}
+
 // RoundReached returns true if all replicas have reached the specified round
 // Should be used with TrackRound handler!
 func RoundReached(r int) testlib.Condition {
@@ -193,7 +262,7 @@ func IsNotNilVote() testlib.Condition {
 			return false
 		}
 		blockID, ok := util.GetVoteBlockIDS(tMsg)
-		return ok && blockID == ""
+		return ok && blockID != ""
 	}
 }
 
@@ -268,5 +337,23 @@ func IsEventNewRound(r int) testlib.Condition {
 			return false
 		}
 		return round >= r
+	}
+}
+
+func DiffCommits() testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		eType, ok := e.Type.(*types.GenericEventType)
+		if ok && eType.T == "Committing block" {
+			blockID, ok := eType.Params["block_id"]
+			if ok {
+				curBlockID, exists := c.Vars.GetString(commitBlockIDKey)
+				if !exists {
+					c.Vars.Set(commitBlockIDKey, blockID)
+					return false
+				}
+				return blockID != curBlockID
+			}
+		}
+		return false
 	}
 }

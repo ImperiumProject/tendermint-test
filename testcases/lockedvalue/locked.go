@@ -1,4 +1,4 @@
-package sanity
+package lockedvalue
 
 import (
 	"time"
@@ -37,7 +37,7 @@ func (twoFilters) changeProposalToNil(e *types.Event, c *testlib.Context) []*typ
 //		1.1 One replica prevotes and precommits nil
 // 	2. In the next round change the proposal block value
 // 	3. Replicas should prevote and precommit the earlier block and commit
-func TwoTestCase(sysParams *common.SystemParams) *testlib.TestCase {
+func LockedCommit(sysParams *common.SystemParams) *testlib.TestCase {
 
 	filters := twoFilters{}
 
@@ -57,25 +57,15 @@ func TwoTestCase(sysParams *common.SystemParams) *testlib.TestCase {
 			common.ChangeVoteToNil(),
 		),
 	)
+	// Blanket change of all precommits in round 0 to nil,
+	// We expect replicas to lock onto the proposal and this is just to ensure they move to the next round
 	handler.AddHandler(
 		testlib.If(
 			testlib.IsMessageSend().
 				And(common.IsMessageFromRound(0)).
-				And(common.IsMessageType(util.Precommit)).
-				And(testlib.CountTo("voteCount").Leq(2*sysParams.F-1)),
+				And(common.IsMessageType(util.Precommit)),
 		).Then(
-			testlib.CountTo("voteCount").Incr(),
-			testlib.DeliverMessage(),
-		),
-	)
-	handler.AddHandler(
-		testlib.If(
-			testlib.IsMessageSend().
-				And(common.IsMessageFromRound(0)).
-				And(common.IsMessageType(util.Precommit)).
-				And(testlib.CountTo("voteCount").Gt(2*sysParams.F - 1)),
-		).Then(
-			testlib.DropMessage(),
+			common.ChangeVoteToNil(),
 		),
 	)
 	handler.AddHandler(

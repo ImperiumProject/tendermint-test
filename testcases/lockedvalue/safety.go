@@ -30,19 +30,23 @@ func DifferentDecisions(sysParams *common.SystemParams) *testlib.TestCase {
 	init := sm.Builder()
 
 	init.On(common.IsCommit(), testlib.FailStateLabel)
-	init.On(
+	precommitOld := init.On(
 		testlib.IsMessageSend().
 			And(common.IsMessageType(util.Precommit)).
 			And(common.IsVoteFromPart("h")).
 			And(common.IsVoteForProposal("zeroProposal")),
 		"PrecommittedOld",
-	).On(
+	)
+	precommitOld.MarkSuccess()
+
+	precommitOld.On(
 		testlib.IsMessageSend().
 			And(common.IsMessageType(util.Precommit)).
 			And(common.IsVoteFromPart("h")).
 			And(common.IsVoteForProposal("newProposal")),
-		"PrecommittedNew",
-	).On(
+		testlib.FailStateLabel,
+	)
+	precommitOld.On(
 		diffCommits(),
 		testlib.FailStateLabel,
 	)

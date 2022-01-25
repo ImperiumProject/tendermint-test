@@ -266,7 +266,7 @@ func ChangeVote(replica *types.Replica, tMsg *TMessage, blockID *ttypes.BlockID)
 	return tMsg, nil
 }
 
-func ChangeVoteTime(replica *types.Replica, tMsg *TMessage, time time.Time) (*TMessage, error) {
+func ChangeVoteTime(replica *types.Replica, tMsg *TMessage, add time.Duration) (*TMessage, error) {
 
 	privKey, err := GetPrivKey(replica)
 	if err != nil {
@@ -293,7 +293,7 @@ func ChangeVoteTime(replica *types.Replica, tMsg *TMessage, time time.Time) (*TM
 		Height:           vote.Height,
 		Round:            vote.Round,
 		BlockID:          *blockID,
-		Timestamp:        time,
+		Timestamp:        vote.Timestamp.Add(add),
 		ValidatorAddress: vote.ValidatorAddress,
 		ValidatorIndex:   vote.ValidatorIndex,
 	}
