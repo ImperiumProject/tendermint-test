@@ -3,7 +3,9 @@ package util
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"sync"
+	"time"
 
 	"github.com/ImperiumProject/imperium/types"
 	"github.com/tendermint/tendermint/crypto"
@@ -39,6 +41,22 @@ func (r *ReplicaSet) Add(replica *types.Replica) {
 		r.replicas[replica.ID] = replica
 		r.size = r.size + 1
 	}
+}
+
+func (r *ReplicaSet) GetRandom() *types.Replica {
+	r.mtx.Lock()
+	defer r.mtx.Unlock()
+	randI := rand.Intn(len(r.replicas))
+	var replica *types.Replica
+	i := 0
+	for _, repl := range r.replicas {
+		if i == randI {
+			replica = repl
+			break
+		}
+		i++
+	}
+	return replica
 }
 
 func (r *ReplicaSet) Size() int {
@@ -119,4 +137,8 @@ func GetReplicaAddress(r *types.Replica) ([]byte, error) {
 		return nil, err
 	}
 	return key.PubKey().Address().Bytes(), nil
+}
+
+func init() {
+	rand.Seed(time.Now().UnixMilli())
 }

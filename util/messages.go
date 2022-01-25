@@ -118,11 +118,13 @@ func (t *TMessage) HeightRound() (int, int) {
 }
 
 func (t *TMessage) Marshal() ([]byte, error) {
-	msgB, err := proto.Marshal(t.Data)
-	if err != nil {
-		return nil, err
+	if t.Data != nil {
+		msgB, err := proto.Marshal(t.Data)
+		if err != nil {
+			return nil, err
+		}
+		t.MsgB = msgB
 	}
-	t.MsgB = msgB
 
 	result, err := json.Marshal(t)
 	if err != nil {
@@ -266,8 +268,57 @@ func ChangeVote(replica *types.Replica, tMsg *TMessage, blockID *ttypes.BlockID)
 	return tMsg, nil
 }
 
-func ChangeVoteTime(replica *types.Replica, tMsg *TMessage, add time.Duration) (*TMessage, error) {
+func ChangeVoteRound(replica *types.Replica, tMsg *TMessage, round int32) (*TMessage, error) {
+	privKey, err := GetPrivKey(replica)
+	if err != nil {
+		return nil, err
+	}
+	chainID, err := GetChainID(replica)
+	if err != nil {
+		return nil, err
+	}
 
+	if tMsg.Type != Prevote && tMsg.Type != Precommit {
+		// Can't change vote of unknown type
+		return tMsg, nil
+	}
+
+	vote := tMsg.Data.GetVote().Vote
+
+	blockID, err := ttypes.BlockIDFromProto(&vote.BlockID)
+	if err != nil {
+		return nil, err
+	}
+	newVote := &ttypes.Vote{
+		Type:             vote.Type,
+		Height:           vote.Height,
+		Round:            round,
+		BlockID:          *blockID,
+		Timestamp:        vote.Timestamp,
+		ValidatorAddress: vote.ValidatorAddress,
+		ValidatorIndex:   vote.ValidatorIndex,
+	}
+	signBytes := ttypes.VoteSignBytes(chainID, newVote.ToProto())
+
+	sig, err := privKey.Sign(signBytes)
+	if err != nil {
+		return nil, fmt.Errorf("could not sign vote: %s", err)
+	}
+
+	newVote.Signature = sig
+
+	tMsg.Data = &tmsg.Message{
+		Sum: &tmsg.Message_Vote{
+			Vote: &tmsg.Vote{
+				Vote: newVote.ToProto(),
+			},
+		},
+	}
+
+	return tMsg, nil
+}
+
+func ChangeVoteTime(replica *types.Replica, tMsg *TMessage, add time.Duration) (*TMessage, error) {
 	privKey, err := GetPrivKey(replica)
 	if err != nil {
 		return nil, err

@@ -35,7 +35,7 @@ func ExpectNoUnlock(sysParams *common.SystemParams) *testlib.TestCase {
 	)
 
 	cascade := testlib.NewHandlerCascade()
-	cascade.AddHandler(common.TrackRound)
+	cascade.AddHandler(common.TrackRoundAll)
 	// Change faulty replicas votes to nil
 	cascade.AddHandler(
 		testlib.If(

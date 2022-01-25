@@ -21,7 +21,7 @@ func RoundSkip(sysParams *common.SystemParams, height, round int) *testlib.TestC
 	)
 
 	cascade := testlib.NewHandlerCascade()
-	cascade.AddHandler(common.TrackRound)
+	cascade.AddHandler(common.TrackRoundAll)
 	cascade.AddHandler(
 		testlib.If(
 			common.IsFromHeight(height).Not(),

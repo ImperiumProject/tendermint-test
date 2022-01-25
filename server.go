@@ -9,6 +9,7 @@ import (
 	"github.com/ImperiumProject/imperium/config"
 	"github.com/ImperiumProject/imperium/testlib"
 	"github.com/ImperiumProject/tendermint-test/common"
+	"github.com/ImperiumProject/tendermint-test/testcases/byzantine"
 	"github.com/ImperiumProject/tendermint-test/util"
 )
 
@@ -46,6 +47,11 @@ func main() {
 			// mainpath.QuorumPrevotes(sysParams),
 			// invariant.QuorumPrecommits(sysParams),
 			// invariant.NotNilDecide(sysParams),
+			// byzantine.LaggingReplica(sysParams, 10, 10*time.Minute),
+			// byzantine.GarbledMessage(sysParams),
+			// byzantine.HigherRound(sysParams),
+			byzantine.CrashReplica(sysParams),
+			// byzantine.ForeverLaggingReplica(sysParams),
 		},
 	)
 

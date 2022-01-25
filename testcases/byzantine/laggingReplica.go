@@ -1,4 +1,4 @@
-package rskip
+package byzantine
 
 import (
 	"time"
@@ -8,25 +8,23 @@ import (
 	"github.com/ImperiumProject/tendermint-test/util"
 )
 
-func CommitAfterRoundSkip(sp *common.SystemParams) *testlib.TestCase {
+func LaggingReplica(sp *common.SystemParams, rounds int, timeout time.Duration) *testlib.TestCase {
 	sm := testlib.NewStateMachine()
 	init := sm.Builder()
+	init.On(common.IsCommit(), testlib.FailStateLabel)
 
-	roundOne := init.On(
-		common.RoundReached(1),
-		"Round1",
-	)
-	roundOne.On(
-		common.IsCommitForProposal("zeroProposal"),
+	allowCatchUp := init.On(common.RoundReached(rounds), "allowCatchUp")
+	allowCatchUp.On(
+		common.IsCommit(),
 		testlib.SuccessStateLabel,
 	)
-	roundOne.On(
+	allowCatchUp.On(
 		common.DiffCommits(),
 		testlib.FailStateLabel,
 	)
 
 	cascade := testlib.NewHandlerCascade()
-	cascade.AddHandler(common.TrackRoundAll)
+	cascade.AddHandler(common.TrackRoundTwoThirds)
 	cascade.AddHandler(
 		testlib.If(
 			testlib.IsMessageSend().
@@ -41,33 +39,24 @@ func CommitAfterRoundSkip(sp *common.SystemParams) *testlib.TestCase {
 				And(common.IsMessageFromRound(0)).
 				And(common.IsVoteFromPart("h")),
 		).Then(
-			testlib.Set("delayedVotes").Store(),
 			testlib.DropMessage(),
-		),
-	)
-	cascade.AddHandler(
-		testlib.If(
-			testlib.IsMessageSend().Not().
-				And(sm.InState("Round1")),
-		).Then(
-			testlib.Set("delayedVotes").DeliverAll(),
-			testlib.DeliverMessage(),
 		),
 	)
 	cascade.AddHandler(
 		testlib.If(
 			testlib.IsMessageSend().
 				And(common.IsMessageFromRound(0)).
-				And(common.IsMessageType(util.Proposal)),
+				And(common.IsMessageToPart("h")).
+				And(common.IsMessageType(util.Prevote).Or(common.IsMessageType(util.Precommit))).
+				And(sm.InState("allowCatchUp").Not()),
 		).Then(
-			common.RecordProposal("zeroProposal"),
-			testlib.DeliverMessage(),
+			testlib.DropMessage(),
 		),
 	)
 
 	testcase := testlib.NewTestCase(
-		"CommitAfterRoundSkip",
-		2*time.Minute,
+		"LaggingReplica",
+		timeout,
 		sm,
 		cascade,
 	)

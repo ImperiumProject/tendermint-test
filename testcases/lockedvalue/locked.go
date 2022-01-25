@@ -49,7 +49,7 @@ func LockedCommit(sysParams *common.SystemParams) *testlib.TestCase {
 	round1.On(common.RoundReached(2), testlib.FailStateLabel)
 
 	handler := testlib.NewHandlerCascade()
-	handler.AddHandler(common.TrackRound)
+	handler.AddHandler(common.TrackRoundAll)
 	handler.AddHandler(
 		testlib.If(
 			testlib.IsMessageSend().And(common.IsVoteFromFaulty()),

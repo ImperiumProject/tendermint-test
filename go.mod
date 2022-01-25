@@ -2,9 +2,7 @@ module github.com/ImperiumProject/tendermint-test
 
 go 1.17
 
-replace (
- 	github.com/ImperiumProject/imperium v0.1.3 => /Users/srinidhin/Local/go/src/github.com/ImperiumProject/imperium
-)
+replace github.com/ImperiumProject/imperium v0.1.3 => /Users/srinidhin/Local/go/src/github.com/ImperiumProject/imperium
 
 require (
 	github.com/ImperiumProject/imperium v0.1.3
@@ -35,7 +33,6 @@ require (
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/gtank/merlin v0.1.1 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
@@ -53,8 +50,6 @@ require (
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/sasha-s/go-deadlock v0.2.1-0.20190427202633-1595213edefa // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/spf13/cobra v1.3.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20200815110645-5c35d600f0ca // indirect
 	github.com/tecbot/gorocksdb v0.0.0-20191217155057-f0fad39f321c // indirect
 	github.com/tendermint/tm-db v0.6.4 // indirect

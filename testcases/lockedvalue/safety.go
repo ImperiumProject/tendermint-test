@@ -5,7 +5,6 @@ import (
 
 	"github.com/ImperiumProject/imperium/log"
 	"github.com/ImperiumProject/imperium/testlib"
-	"github.com/ImperiumProject/imperium/types"
 	"github.com/ImperiumProject/tendermint-test/common"
 	"github.com/ImperiumProject/tendermint-test/util"
 )
@@ -47,20 +46,12 @@ func DifferentDecisions(sysParams *common.SystemParams) *testlib.TestCase {
 		testlib.FailStateLabel,
 	)
 	precommitOld.On(
-		diffCommits(),
+		common.DiffCommits(),
 		testlib.FailStateLabel,
 	)
 
 	cascade := testlib.NewHandlerCascade()
-	cascade.AddHandler(common.TrackRound)
-
-	cascade.AddHandler(
-		testlib.If(
-			common.IsCommit(),
-		).Then(
-			recordCommit(),
-		),
-	)
+	cascade.AddHandler(common.TrackRoundAll)
 
 	// Store the correct precommit messages of round 0 from replica "h" or "faulty" to all replicas in "delay"
 	cascade.AddHandler(
@@ -209,27 +200,4 @@ func DifferentDecisions(sysParams *common.SystemParams) *testlib.TestCase {
 	)
 	testcase.SetupFunc(common.Setup(sysParams, safetySetup))
 	return testcase
-}
-
-func recordCommit() testlib.Action {
-	return func(e *types.Event, c *testlib.Context) []*types.Message {
-		eType, ok := e.Type.(*types.GenericEventType)
-		if ok && eType.T == "Committing block" {
-			blockID, ok := eType.Params["block_id"]
-			if ok {
-				if c.Vars.Exists("commitOne") {
-					c.Vars.Set("commitTwo", blockID)
-				} else {
-					c.Vars.Set("commitOne", blockID)
-				}
-			}
-		}
-		return []*types.Message{}
-	}
-}
-
-func diffCommits() testlib.Condition {
-	return func(e *types.Event, c *testlib.Context) bool {
-		return c.Vars.Exists("commitOne") && c.Vars.Exists("commitTwo")
-	}
 }

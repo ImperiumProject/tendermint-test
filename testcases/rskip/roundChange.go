@@ -16,11 +16,19 @@ func ExpectNewRound(sp *common.SystemParams) *testlib.TestCase {
 		common.IsNewHeightRoundFromPart("h", 1, 1),
 		testlib.SuccessStateLabel,
 	)
-	init.On(
+	newRound := init.On(
 		testlib.Count("round1ToH").Geq(sp.F+1),
 		"newRoundMessagesDelivered",
 	).On(
 		common.IsNewHeightRoundFromPart("h", 1, 1),
+		"NewRound",
+	)
+	newRound.On(
+		common.DiffCommits(),
+		testlib.FailStateLabel,
+	)
+	newRound.On(
+		common.IsCommit(),
 		testlib.SuccessStateLabel,
 	)
 
@@ -65,6 +73,7 @@ func ExpectNewRound(sp *common.SystemParams) *testlib.TestCase {
 	cascade.AddHandler(
 		testlib.If(
 			testlib.IsMessageSend().
+				And(common.IsMessageFromRound(0)).
 				And(common.IsVoteFromPart("h")),
 		).Then(
 			testlib.DropMessage(),

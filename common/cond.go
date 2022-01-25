@@ -357,3 +357,31 @@ func DiffCommits() testlib.Condition {
 		return false
 	}
 }
+
+func MessageCurRoundGt(m int) testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		tMsg, ok := util.GetMessageFromEvent(e, c)
+		if !ok {
+			return false
+		}
+		curRound, ok := c.Vars.GetInt(curRoundKey)
+		if !ok {
+			return false
+		}
+		return tMsg.Round() >= curRound-m
+	}
+}
+
+func IsMessageFromCurRound() testlib.Condition {
+	return func(e *types.Event, c *testlib.Context) bool {
+		tMsg, ok := util.GetMessageFromEvent(e, c)
+		if !ok {
+			return false
+		}
+		curRound, ok := c.Vars.GetInt(curRoundKey)
+		if !ok {
+			return false
+		}
+		return tMsg.Round() == curRound
+	}
+}

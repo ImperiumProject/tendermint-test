@@ -45,7 +45,7 @@ func Relocked(sysParams *common.SystemParams) *testlib.TestCase {
 	)
 
 	cascade := testlib.NewHandlerCascade()
-	cascade.AddHandler(common.TrackRound)
+	cascade.AddHandler(common.TrackRoundAll)
 	// Change faulty replicas votes to nil if not seen new proposal
 	// New proposal otherwise
 	cascade.AddHandler(
